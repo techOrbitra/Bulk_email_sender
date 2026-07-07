@@ -27,8 +27,8 @@ Use at least an `email` column.
 
 ```csv
 name,email
-Oceanlab,hr@oceanlab.example
-Creatuaries,"tapan.gajera@creatuaries.com,info@creatuaries.com"
+receiver name,mrcoders88@gmail.com
+receiver name,sataparad1@gmail.com
 ```
 
 Notes:
