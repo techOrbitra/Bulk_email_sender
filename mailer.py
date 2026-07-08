@@ -66,7 +66,7 @@ def normalize_csv_rows(csv_file):
     return rows
 
 
-def build_message(sender_email, recipient, subject, body_template, reply_to, attachment_path):
+def build_message(sender_email, recipient, subject, body_template, reply_to, attachment_path, attachment_filename=None):
     body = body_template.format(**recipient)
     to_email = recipient.get("to_email") or recipient.get("email", "")
     cc_email = recipient.get("cc_email", "") or None
@@ -89,7 +89,7 @@ def build_message(sender_email, recipient, subject, body_template, reply_to, att
             attachment_bytes,
             maintype=maintype,
             subtype=subtype,
-            filename=Path(attachment_path).name,
+            filename=attachment_filename or Path(attachment_path).name,
         )
     return message
 
@@ -120,14 +120,17 @@ def bulk_send_from_csv(
         return {"sent": 0, "failed": 0, "errors": []}
 
     temp_path = None
+    attachment_filename = None
     if resume_file is not None:
         if hasattr(resume_file, "getbuffer"):
+            attachment_filename = Path(getattr(resume_file, "name", "attachment")).name
             suffix = Path(getattr(resume_file, "name", "attachment")).suffix or ".bin"
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
                 temp_file.write(resume_file.getbuffer())
                 temp_path = temp_file.name
         else:
             temp_path = str(resume_file)
+            attachment_filename = Path(temp_path).name
 
     errors = []
     sent = 0
@@ -149,6 +152,7 @@ def bulk_send_from_csv(
                     body_template=body_template,
                     reply_to=template_reply_to,
                     attachment_path=temp_path,
+                    attachment_filename=attachment_filename,
                 )
                 send_message(
                     smtp_host=smtp_host,
